@@ -23,12 +23,13 @@ class Bot:
         self.exchange = exchange
         self.version = "1.1.7"
 
+        self.quote = "USDT"
         self.run()
 
     def run(self):
-        balance = self.exchange.get_balance()
-        ob = self.exchange.get_orderbook()
-        positions = self.exchange.get_positions()
+        balance = self.exchange.get_balance(quote=self.quote)
+        ob = self.exchange.get_orderbook(symbol="ARBUSDT")
+        positions = self.exchange.get_positions(symbol="ARBUSDT")
         log.info(balance)
         log.info(ob)
         log.info(positions)
