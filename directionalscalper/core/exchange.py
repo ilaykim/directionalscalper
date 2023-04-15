@@ -18,11 +18,13 @@ class Exchange:
             self.exchange = ccxt.bybit(
                 {
                     "enableRateLimit": True,
-                    "apiKey": self.config.exchange.api_key,
-                    "secret": self.config.exchange.api_secret,
+                    "apiKey": self.config.api_key,
+                    "secret": self.config.api_secret,
                 }
             )
             self.status = "initialised"
+        else:
+            log.warning(f"{self.exchange_name} not implemented yet")
 
     def get_balance(self, quote: str) -> dict:
         values = {
