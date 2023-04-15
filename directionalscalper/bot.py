@@ -18,9 +18,10 @@ from directionalscalper.messengers.manager import MessageManager
 
 
 class Bot:
-    def __init__(self, api, exchange):
+    def __init__(self, api, exchange, config):
         self.api = api
         self.exchange = exchange
+        self.config = config
         self.version = "1.1.7"
 
         self.quote = "USDT"
@@ -28,8 +29,8 @@ class Bot:
 
     def run(self):
         balance = self.exchange.get_balance(quote=self.quote)
-        ob = self.exchange.get_orderbook(symbol="ARBUSDT")
-        positions = self.exchange.get_positions(symbol="ARBUSDT")
+        ob = self.exchange.get_orderbook(symbol=self.config.symbol)
+        positions = self.exchange.get_positions(symbol=self.config.symbol)
         log.info(balance)
         log.info(ob)
         log.info(positions)
@@ -48,6 +49,6 @@ if __name__ == "__main__":
         url=f"{config.api.url}{config.api.filename}",
     )
 
-    exchange = Exchange(exchange_name="bybit", config=config)
+    exchange = Exchange(exchange_name=config.exchange.name, config=config.exchange)
 
-    bot = Bot(exchange=exchange, api=manager)
+    bot = Bot(exchange=exchange, api=manager, config=config.bot)
