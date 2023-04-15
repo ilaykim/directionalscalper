@@ -53,29 +53,27 @@ class Exchange:
                             float(data["info"]["result"][quote]["equity"]), 2
                         )
         except Exception as e:
-            print(f"An unknown error occured in get_balance(): {e}")
-            log.warning(f"{e}")
+            log.warning(f"An unknown error occured in get_balance(): {e}")
         return values
 
     def get_orderbook(self, symbol) -> dict:
-        values = {"bids": 0, "asks": 0}
+        values = {"bids": 0.0, "asks": 0.0}
         try:
             data = self.exchange.fetch_order_book(symbol)
             if "bids" in data and "asks" in data:
                 if len(data["bids"]) > 0 and len(data["asks"]) > 0:
                     if len(data["bids"][0]) > 0 and len(data["asks"][0]) > 0:
-                        values["bids"] = int(data["bids"][0][0])
-                        values["asks"] = int(data["asks"][0][0])
+                        values["bids"] = float(data["bids"][0][0])
+                        values["asks"] = float(data["asks"][0][0])
         except Exception as e:
-            print(f"An unknown error occured in get_orderbook(): {e}")
-            log.warning(f"{e}")
+            log.warning(f"An unknown error occured in get_orderbook(): {e}")
         return values
 
     def get_positions(self, symbol):
         values = {
             "long": {
-                "qty": 0,
-                "price": 0,
+                "qty": 0.0,
+                "price": 0.0,
                 "realised": 0,
                 "cum_realised": 0,
                 "upnl": 0,
@@ -84,8 +82,8 @@ class Exchange:
                 "entry_price": 0,
             },
             "short": {
-                "qty": 0,
-                "price": 0,
+                "qty": 0.0,
+                "price": 0.0,
                 "realised": 0,
                 "cum_realised": 0,
                 "upnl": 0,
@@ -107,17 +105,22 @@ class Exchange:
                     values[sides[side]]["cum_realised"] = round(
                         float(data[side]["info"]["cum_realised_pnl"]), 4
                     )
-                    values[sides[side]]["upnl"] = round(
-                        float(data[side]["info"]["unrealised_pnl"]), 4
-                    )
-                    values[sides[side]]["upnl_pct"] = round(
-                        float(data[side]["precentage"]), 4
-                    )
-                    values[sides[side]]["liq_price"] = float(
-                        data[side]["liquidationPrice"]
-                    )
-                    values[sides[side]]["entry_price"] = float(data[side]["entryPrice"])
+                    if data[side]["info"]["unrealised_pnl"] is not None:
+                        values[sides[side]]["upnl"] = round(
+                            float(data[side]["info"]["unrealised_pnl"]), 4
+                        )
+                    if data[side]["precentage"] is not None:
+                        values[sides[side]]["upnl_pct"] = round(
+                            float(data[side]["precentage"]), 4
+                        )
+                    if data[side]["liquidationPrice"] is not None:
+                        values[sides[side]]["liq_price"] = float(
+                            data[side]["liquidationPrice"]
+                        )
+                    if data[side]["entryPrice"] is not None:
+                        values[sides[side]]["entry_price"] = float(
+                            data[side]["entryPrice"]
+                        )
         except Exception as e:
-            print(f"An unknown error occured in get_orderbook(): {e}")
-            log.warning(f"{e}")
+            log.warning(f"An unknown error occured in get_positions(): {e}")
         return values
