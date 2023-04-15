@@ -134,6 +134,7 @@ dmypy.json
 
 # Project specific
 config.json
+/data/*
 
 # Toaster specific
 /toasterenv/
