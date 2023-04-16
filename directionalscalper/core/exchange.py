@@ -245,7 +245,7 @@ class Exchange:
         except Exception as e:
             log.warning(f"An unknown error occurred in cancel_entry(): {e}")
 
-    def cancel_close(self, symbol: str):
+    def cancel_close(self, symbol: str, side: str):
         try:
             order = self.exchange.fetch_open_orders(symbol)
             if len(order) > 0:
@@ -257,6 +257,7 @@ class Exchange:
                     if (
                         order_status != "Filled"
                         and order_side == "Buy"
+                        and side == "long"
                         and order_status != "Cancelled"
                         and reduce_only
                     ):
@@ -265,6 +266,7 @@ class Exchange:
                     elif (
                         order_status != "Filled"
                         and order_side == "Sell"
+                        and side == "short"
                         and order_status != "Cancelled"
                         and reduce_only
                     ):
