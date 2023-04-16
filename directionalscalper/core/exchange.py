@@ -1,6 +1,7 @@
 import logging
 
 import ccxt
+import pandas as pd
 
 log = logging.getLogger(__name__)
 
@@ -174,6 +175,30 @@ class Exchange:
         except Exception as e:
             log.warning(f"An unknown error occurred in get_positions(): {e}")
         return current_price
+
+    def get_moving_averages(
+        self, symbol: str, timeframe: str = "1m", num_bars: int = 20
+    ):
+        values = {"MA_3_H": 0.0, "MA_3_L": 0.0, "MA_6_H": 0.0, "MA_6_L": 0.0}
+        try:
+            bars = self.exchange.fetch_ohlcv(
+                symbol=symbol, timeframe=timeframe, limit=num_bars
+            )
+            df = pd.DataFrame(
+                bars, columns=["Time", "Open", "High", "Low", "Close", "Volume"]
+            )
+            df["Time"] = pd.to_datetime(df["Time"], unit="ms")
+            df["MA_3_High"] = df.High.rolling(3).mean()
+            df["MA_3_Low"] = df.Low.rolling(3).mean()
+            df["MA_6_High"] = df.High.rolling(6).mean()
+            df["MA_6_Low"] = df.Low.rolling(6).mean()
+            values["MA_3_H"] = df["MA_3_High"].iat[-1]
+            values["MA_3_L"] = df["MA_3_Low"].iat[-1]
+            values["MA_6_H"] = df["MA_6_High"].iat[-1]
+            values["MA_6_L"] = df["MA_6_Low"].iat[-1]
+        except Exception as e:
+            log.warning(f"An unknown error occurred in get_moving_averages(): {e}")
+        return values
 
     def create_limit_order(self, symbol: str, side: str, qty: float, price: float):
         try:
