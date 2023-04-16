@@ -200,6 +200,79 @@ class Exchange:
             log.warning(f"An unknown error occurred in get_moving_averages(): {e}")
         return values
 
+    def get_open_orders(self, symbol: str):
+        values = {"id": "", "price": 0.0, "qty": 0.0}
+        try:
+            order = self.exchange.fetch_open_orders(symbol)
+            if len(order) > 0:
+                if "info" in order[0]:
+                    order_status = order[0]["info"]["order_status"]
+                    order_side = order[0]["info"]["side"]
+                    reduce_only = order[0]["info"]["reduce_only"]
+                    if order_status == "New" and order_side == "Buy" and reduce_only:
+                        values["id"] = order[0]["info"]["order_id"]
+                        values["price"] = order[0]["info"]["price"]
+                        values["qty"] = order[0]["info"]["qty"]
+        except Exception as e:
+            log.warning(f"An unknown error occurred in get_open_orders(): {e}")
+        return values
+
+    def cancel_entry(self, symbol: str):
+        try:
+            order = self.exchange.fetch_open_orders(symbol)
+            if len(order) > 0:
+                if "info" in order[0]:
+                    order_id = order[0]["info"]["order_id"]
+                    order_status = order[0]["info"]["order_status"]
+                    order_side = order[0]["info"]["side"]
+                    reduce_only = order[0]["info"]["reduce_only"]
+                    if (
+                        order_status != "Filled"
+                        and order_side == "Buy"
+                        and order_status != "Cancelled"
+                        and not reduce_only
+                    ):
+                        self.exchange.cancel_order(symbol=symbol, id=order_id)
+                        log.info(f"Cancelling order: {order_id}")
+                    elif (
+                        order_status != "Filled"
+                        and order_side == "Sell"
+                        and order_status != "Cancelled"
+                        and not reduce_only
+                    ):
+                        self.exchange.cancel_order(symbol=symbol, id=order_id)
+                        log.info(f"Cancelling order: {order_id}")
+        except Exception as e:
+            log.warning(f"An unknown error occurred in cancel_entry(): {e}")
+
+    def cancel_close(self, symbol: str):
+        try:
+            order = self.exchange.fetch_open_orders(symbol)
+            if len(order) > 0:
+                if "info" in order[0]:
+                    order_id = order[0]["info"]["order_id"]
+                    order_status = order[0]["info"]["order_status"]
+                    order_side = order[0]["info"]["side"]
+                    reduce_only = order[0]["info"]["reduce_only"]
+                    if (
+                        order_status != "Filled"
+                        and order_side == "Buy"
+                        and order_status != "Cancelled"
+                        and reduce_only
+                    ):
+                        self.exchange.cancel_order(symbol=symbol, id=order_id)
+                        log.info(f"Cancelling order: {order_id}")
+                    elif (
+                        order_status != "Filled"
+                        and order_side == "Sell"
+                        and order_status != "Cancelled"
+                        and reduce_only
+                    ):
+                        self.exchange.cancel_order(symbol=symbol, id=order_id)
+                        log.info(f"Cancelling order: {order_id}")
+        except Exception as e:
+            log.warning(f"{e}")
+
     def create_limit_order(self, symbol: str, side: str, qty: float, price: float):
         try:
             if side == "buy":
