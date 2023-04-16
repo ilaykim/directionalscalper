@@ -19,6 +19,7 @@ from directionalscalper.strategy.aggressive import Aggressive
 from directionalscalper.strategy.blackjack import Blackjack
 from directionalscalper.strategy.hedge import Hedge
 from directionalscalper.strategy.long import Long
+from directionalscalper.strategy.scalein import Scalein
 from directionalscalper.strategy.short import Short
 from directionalscalper.strategy.violent import Violent
 
@@ -32,6 +33,7 @@ class Bot:
         self.version = "1.1.7"
 
         self.quote = "USDT"
+        self.exchange.setup_exchange(symbol=self.config.symbol)
         self.run()
 
     def run(self):
@@ -58,6 +60,5 @@ if __name__ == "__main__":
 
     exchange = Exchange(exchange_name=config.exchange.name, config=config.exchange)
     strategy = Violent()
-    strategy.get_name()
 
     bot = Bot(exchange=exchange, api=manager, config=config.bot, strategy=strategy)
