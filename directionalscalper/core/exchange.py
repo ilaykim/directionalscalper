@@ -26,6 +26,44 @@ class Exchange:
         else:
             log.warning(f"{self.exchange_name} not implemented yet")
 
+    def setup_exchange(self, symbol):
+        values = {"position": False, "margin": False, "leverage": False}
+        try:
+            self.exchange.set_position_mode(hedged="BothSide", symbol=symbol)
+            values["position"] = True
+        except Exception as e:
+            log.warning(f"An unknown error occurred in with set_position_mode: {e}")
+        try:
+            self.exchange.set_margin_mode(marginMode="cross", symbol=symbol)
+            values["margin"] = True
+        except Exception as e:
+            log.warning(f"An unknown error occurred in with set_margin_mode: {e}")
+        market_data = self.get_market_data(symbol=symbol)
+        try:
+            self.exchange.set_leverage(leverage=market_data["leverage"], symbol=symbol)
+            values["leverage"] = True
+        except Exception as e:
+            log.warning(f"An unknown error occurred in with set_leverage: {e}")
+        log.info(values)
+
+    def get_market_data(self, symbol: str):
+        values = {"precision": 0.0, "leverage": 0.0, "min_qty": 0.0}
+        try:
+            self.exchange.load_markets()
+            symbol_data = self.exchange.market(symbol)
+            if "info" in symbol_data:
+                values["precision"] = symbol_data["info"]["price_scale"]
+                values["leverage"] = symbol_data["info"]["leverage_filter"][
+                    "max_leverage"
+                ]
+                values["min_qty"] = symbol_data["info"]["lot_size_filter"][
+                    "min_trading_qty"
+                ]
+
+        except Exception as e:
+            log.warning(f"An unknown error occurred in get_market_data(): {e}")
+        return values
+
     def get_balance(self, quote: str) -> dict:
         values = {
             "available_balance": 0.0,
@@ -55,7 +93,7 @@ class Exchange:
                             float(data["info"]["result"][quote]["equity"]), 2
                         )
         except Exception as e:
-            log.warning(f"An unknown error occured in get_balance(): {e}")
+            log.warning(f"An unknown error occurred in get_balance(): {e}")
         return values
 
     def get_orderbook(self, symbol) -> dict:
@@ -68,7 +106,7 @@ class Exchange:
                         values["bids"] = float(data["bids"][0][0])
                         values["asks"] = float(data["asks"][0][0])
         except Exception as e:
-            log.warning(f"An unknown error occured in get_orderbook(): {e}")
+            log.warning(f"An unknown error occurred in get_orderbook(): {e}")
         return values
 
     def get_positions(self, symbol):
@@ -124,7 +162,7 @@ class Exchange:
                             data[side]["entryPrice"]
                         )
         except Exception as e:
-            log.warning(f"An unknown error occured in get_positions(): {e}")
+            log.warning(f"An unknown error occurred in get_positions(): {e}")
         return values
 
     def get_current_price(self, symbol):
@@ -134,7 +172,7 @@ class Exchange:
             if "bid" in ticker and "ask" in ticker:
                 current_price = (ticker["bid"] + ticker["ask"]) / 2
         except Exception as e:
-            log.warning(f"An unknown error occured in get_positions(): {e}")
+            log.warning(f"An unknown error occurred in get_positions(): {e}")
         return current_price
 
     def create_limit_order(self, symbol: str, side: str, qty: float, price: float):
@@ -150,4 +188,4 @@ class Exchange:
             else:
                 log.warning(f"side {side} does not exist")
         except Exception as e:
-            log.warning(f"An unknown error occured in create_limit_order(): {e}")
+            log.warning(f"An unknown error occurred in create_limit_order(): {e}")
