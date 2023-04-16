@@ -126,3 +126,28 @@ class Exchange:
         except Exception as e:
             log.warning(f"An unknown error occured in get_positions(): {e}")
         return values
+
+    def get_current_price(self, symbol):
+        current_price = 0.0
+        try:
+            ticker = self.exchange.fetch_ticker(symbol)
+            if "bid" in ticker and "ask" in ticker:
+                current_price = (ticker["bid"] + ticker["ask"]) / 2
+        except Exception as e:
+            log.warning(f"An unknown error occured in get_positions(): {e}")
+        return current_price
+
+    def create_limit_order(self, symbol: str, side: str, qty: float, price: float):
+        try:
+            if side == "buy":
+                self.exchange.create_limit_buy_order(
+                    symbol=symbol, amount=qty, price=price
+                )
+            elif side == "sell":
+                self.exchange.create_limit_sell_order(
+                    symbol=symbol, amount=qty, price=price
+                )
+            else:
+                log.warning(f"side {side} does not exist")
+        except Exception as e:
+            log.warning(f"An unknown error occured in create_limit_order(): {e}")
