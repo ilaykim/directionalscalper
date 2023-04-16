@@ -15,13 +15,20 @@ from directionalscalper.core.exchange import Exchange
 from directionalscalper.core.functions import print_lot_sizes
 from directionalscalper.core.logger import Logger
 from directionalscalper.messengers.manager import MessageManager
+from directionalscalper.strategy.aggressive import Aggressive
+from directionalscalper.strategy.blackjack import Blackjack
+from directionalscalper.strategy.hedge import Hedge
+from directionalscalper.strategy.long import Long
+from directionalscalper.strategy.short import Short
+from directionalscalper.strategy.violent import Violent
 
 
 class Bot:
-    def __init__(self, api, exchange, config):
+    def __init__(self, api, exchange, config, strategy):
         self.api = api
         self.exchange = exchange
         self.config = config
+        self.strategy = strategy
         self.version = "1.1.7"
 
         self.quote = "USDT"
@@ -50,5 +57,7 @@ if __name__ == "__main__":
     )
 
     exchange = Exchange(exchange_name=config.exchange.name, config=config.exchange)
+    strategy = Violent()
+    strategy.get_name()
 
-    bot = Bot(exchange=exchange, api=manager, config=config.bot)
+    bot = Bot(exchange=exchange, api=manager, config=config.bot, strategy=strategy)
