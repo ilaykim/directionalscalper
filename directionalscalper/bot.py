@@ -1,10 +1,7 @@
 import argparse
 import sys
-import time
-import os
 from pathlib import Path
 
-import pandas as pd
 from colorama import Fore, Style
 from rich.live import Live
 
@@ -14,6 +11,7 @@ from directionalscalper.core import tables
 from directionalscalper.core.config import load_config
 from directionalscalper.core.exchange import Exchange
 from directionalscalper.core.functions import print_lot_sizes
+from directionalscalper.core.gui import GUI
 from directionalscalper.core.logger import Logger
 from directionalscalper.messengers.manager import MessageManager
 from directionalscalper.strategy.aggressive import Aggressive
@@ -24,6 +22,7 @@ from directionalscalper.strategy.scalein import Scalein
 from directionalscalper.strategy.short import Short
 from directionalscalper.strategy.violent import Violent
 
+
 class Bot:
     def __init__(self, api, exchange, config, strategy):
         self.api = api
@@ -33,6 +32,7 @@ class Bot:
         self.version = "1.1.7"
 
         self.startup_message()
+        self.gui = GUI(api=self.api, config=self.config, version=self.version)
 
         if self.exchange is not None and self.config is not None:
             self.quote = "USDT"
@@ -42,15 +42,20 @@ class Bot:
             log.error("Unable to start the bot without a valid configuration.")
 
     def run(self):
-        balance = self.exchange.get_balance(quote=self.quote)
-        ob = self.exchange.get_orderbook(symbol=self.config.symbol)
-        positions = self.exchange.get_positions(symbol=self.config.symbol)
-        log.info(balance)
-        log.info(ob)
-        log.info(positions)
+        with Live(self.gui.create_table(), refresh_per_second=2):
+            while True:
+                balance = self.exchange.get_balance(quote=self.quote)
+                ob = self.exchange.get_orderbook(symbol=self.config.symbol)
+                positions = self.exchange.get_positions(symbol=self.config.symbol)
+                log.info(balance)
+                log.info(ob)
+                log.info(positions)
+                break
 
     def startup_message(self):
-        log.info(f"Loading {self.strategy.get_name()} strategy, version {self.strategy.get_version()}")
+        log.info(
+            f"Loading {self.strategy.get_name()} strategy, version {self.strategy.get_version()}"
+        )
 
 
 if __name__ == "__main__":
