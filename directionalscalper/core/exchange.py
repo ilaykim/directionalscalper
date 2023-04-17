@@ -14,7 +14,7 @@ class Exchange:
         self.exchange = None
         self.initialise()
 
-    def initialise(self):
+    def initialise(self) -> None:
         if self.exchange_name == "bybit":
             self.exchange = ccxt.bybit(
                 {
@@ -27,7 +27,7 @@ class Exchange:
         else:
             log.warning(f"{self.exchange_name} not implemented yet")
 
-    def setup_exchange(self, symbol):
+    def setup_exchange(self, symbol) -> None:
         values = {"position": False, "margin": False, "leverage": False}
         try:
             self.exchange.set_position_mode(hedged="BothSide", symbol=symbol)
@@ -47,7 +47,7 @@ class Exchange:
             log.warning(f"An unknown error occurred in with set_leverage: {e}")
         log.info(values)
 
-    def get_market_data(self, symbol: str):
+    def get_market_data(self, symbol: str) -> dict:
         values = {"precision": 0.0, "leverage": 0.0, "min_qty": 0.0}
         try:
             self.exchange.load_markets()
@@ -110,7 +110,7 @@ class Exchange:
             log.warning(f"An unknown error occurred in get_orderbook(): {e}")
         return values
 
-    def get_positions(self, symbol):
+    def get_positions(self, symbol) -> dict:
         values = {
             "long": {
                 "qty": 0.0,
@@ -166,7 +166,7 @@ class Exchange:
             log.warning(f"An unknown error occurred in get_positions(): {e}")
         return values
 
-    def get_current_price(self, symbol):
+    def get_current_price(self, symbol: str) -> float:
         current_price = 0.0
         try:
             ticker = self.exchange.fetch_ticker(symbol)
@@ -178,7 +178,7 @@ class Exchange:
 
     def get_moving_averages(
         self, symbol: str, timeframe: str = "1m", num_bars: int = 20
-    ):
+    ) -> dict:
         values = {"MA_3_H": 0.0, "MA_3_L": 0.0, "MA_6_H": 0.0, "MA_6_L": 0.0}
         try:
             bars = self.exchange.fetch_ohlcv(
@@ -200,7 +200,7 @@ class Exchange:
             log.warning(f"An unknown error occurred in get_moving_averages(): {e}")
         return values
 
-    def get_open_orders(self, symbol: str):
+    def get_open_orders(self, symbol: str) -> dict:
         values = {"id": "", "price": 0.0, "qty": 0.0}
         try:
             order = self.exchange.fetch_open_orders(symbol)
@@ -217,7 +217,7 @@ class Exchange:
             log.warning(f"An unknown error occurred in get_open_orders(): {e}")
         return values
 
-    def cancel_entry(self, symbol: str):
+    def cancel_entry(self, symbol: str) -> None:
         try:
             order = self.exchange.fetch_open_orders(symbol)
             if len(order) > 0:
@@ -245,7 +245,7 @@ class Exchange:
         except Exception as e:
             log.warning(f"An unknown error occurred in cancel_entry(): {e}")
 
-    def cancel_close(self, symbol: str, side: str):
+    def cancel_close(self, symbol: str, side: str) -> None:
         try:
             order = self.exchange.fetch_open_orders(symbol)
             if len(order) > 0:
@@ -275,7 +275,9 @@ class Exchange:
         except Exception as e:
             log.warning(f"{e}")
 
-    def create_limit_order(self, symbol: str, side: str, qty: float, price: float):
+    def create_limit_order(
+        self, symbol: str, side: str, qty: float, price: float
+    ) -> None:
         try:
             if side == "buy":
                 self.exchange.create_limit_buy_order(
