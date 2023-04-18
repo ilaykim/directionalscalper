@@ -42,14 +42,25 @@ class Bot:
             log.error("Unable to start the bot without a valid configuration.")
 
     def run(self):
-        with Live(self.gui.create_table(), refresh_per_second=2):
+        balance = self.exchange.get_balance(quote=self.quote)
+        data = {
+            "symbol": self.config.symbol,
+            "balance": balance["wallet_balance"],
+            "equity": balance["equity"],
+        }
+        with Live(self.gui.create_table(data=data), refresh_per_second=2) as live:
             while True:
                 balance = self.exchange.get_balance(quote=self.quote)
                 ob = self.exchange.get_orderbook(symbol=self.config.symbol)
                 positions = self.exchange.get_positions(symbol=self.config.symbol)
-                log.info(balance)
                 log.info(ob)
                 log.info(positions)
+                data = {
+                    "symbol": self.config.symbol,
+                    "balance": balance["wallet_balance"],
+                    "equity": balance["equity"],
+                }
+                live.update(self.gui.create_table(data=data))
                 break
 
     def startup_message(self):
