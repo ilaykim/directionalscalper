@@ -12,6 +12,7 @@ import ta
 
 sys.path.append(".")
 from directionalscalper.api.exchanges.binance import Binance
+from directionalscalper.api.exchanges.bitget import Bitget
 from directionalscalper.api.exchanges.bybit import Bybit
 from directionalscalper.core.logger import Logger
 
